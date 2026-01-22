@@ -51,36 +51,15 @@ All files are saved to `downloads/<video-title>/` in the **current working direc
 
 ## Workflow
 
-### Step 1: Check and Auto-install Dependencies
+### Step 1: Install Dependencies
 
-**Important**: Check dependencies before any operation. Auto-install if missing (no user prompt needed).
-
-```bash
-# Check and install yt-dlp
-if ! which yt-dlp > /dev/null 2>&1; then
-  echo "Installing yt-dlp..."
-  pip install yt-dlp
-fi
-
-# Check and install ffmpeg
-if ! which ffmpeg > /dev/null 2>&1; then
-  echo "Installing ffmpeg..."
-  brew install ffmpeg
-fi
-```
-
-**Whisper Auto-install Rules**:
-- Auto-install Whisper when video has no subtitles and transcription is needed
-- Install command: `pip install openai-whisper`
-- First run will download model (~244MB for small)
+Run the install script to check and install all dependencies:
 
 ```bash
-# Check and install whisper (only when transcription needed)
-if ! pip show openai-whisper > /dev/null 2>&1; then
-  echo "Installing Whisper (for speech-to-text)..."
-  pip install openai-whisper
-fi
+bash "$SKILL_DIR/scripts/install_deps.sh"
 ```
+
+This installs: ffmpeg, yt-dlp, faster-whisper, and checks Python version.
 
 ### Step 2: Get Video Info and Create Output Directory
 
@@ -89,12 +68,9 @@ fi
 TITLE=$(yt-dlp --print "%(title)s" "VIDEO_URL" | sed 's/[/:*?"<>|]/_/g' | cut -c1-80)
 DURATION=$(yt-dlp --print "%(duration)s" "VIDEO_URL")
 
-# Create output directory (downloads folder in current working directory)
+# Create output directory
 OUTPUT_DIR=./downloads/"$TITLE"
 mkdir -p "$OUTPUT_DIR"
-
-# Check available subtitles
-yt-dlp --list-subs "VIDEO_URL"
 ```
 
 ### Step 3: Download Video and Audio
@@ -125,152 +101,86 @@ yt-dlp --write-auto-subs --sub-lang zh,en --skip-download \
   -o "$OUTPUT_DIR/subtitle" "VIDEO_URL"
 ```
 
-3. **Use Whisper transcription when no subtitles (auto-install)**
+3. **Use faster-whisper transcription when no subtitles available**
+
 ```bash
-# Ensure Whisper is installed
-pip show openai-whisper > /dev/null 2>&1 || pip install openai-whisper
-
-# Use Whisper to transcribe, output vtt format (with timestamps)
-whisper "$OUTPUT_DIR/audio.mp3" --model small --language auto \
-  --output_format vtt --output_dir "$OUTPUT_DIR"
-
-# Rename to unified filename
-mv "$OUTPUT_DIR/audio.vtt" "$OUTPUT_DIR/subtitle.vtt"
+python "$SKILL_DIR/scripts/parallel_transcribe.py" \
+  --input "$OUTPUT_DIR/audio.mp3" \
+  --output-dir "$OUTPUT_DIR" \
+  --model small \
+  --language auto
 ```
 
-**Whisper Model Selection Guide**:
-| Model | Size | Speed | Use Case |
-|-------|------|-------|----------|
-| tiny | 39M | Fastest | Quick tests for short videos |
-| base | 74M | Fast | General use |
-| small | 244M | Medium | **Recommended**, balanced speed and quality |
-| medium | 769M | Slow | Higher quality needs |
-| large | 1.5G | Slowest | Best accuracy |
+The script automatically:
+- Splits long audio files at silence points
+- Uses multiple CPU cores for parallel transcription
+- Outputs both `subtitle.vtt` and `transcript.txt`
+
+**Transcription Options**:
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--model` | small | tiny/base/small/medium/large-v3 |
+| `--language` | auto | Language code or 'auto' |
+| `--workers` | CPU/2 | Number of parallel workers |
+| `--min-segment` | 60 | Min duration (sec) to enable splitting |
 
 ### Step 5: Generate Plain Text Transcript
 
+If subtitles were downloaded (not transcribed), convert to plain text:
+
 ```bash
-# Find subtitle file (may be .vtt or .srt)
-SUBTITLE_FILE=$(ls "$OUTPUT_DIR"/*.vtt "$OUTPUT_DIR"/*.srt 2>/dev/null | head -1)
-
-# VTT to plain text (remove timestamps)
-if [[ "$SUBTITLE_FILE" == *.vtt ]]; then
-  sed '/^[0-9]/d; /^$/d; /-->/d; /^WEBVTT/d; /^Kind:/d; /^Language:/d; /^NOTE/d' \
-    "$SUBTITLE_FILE" > "$OUTPUT_DIR/transcript.txt"
+if [[ ! -f "$OUTPUT_DIR/transcript.txt" ]]; then
+  SUBTITLE_FILE=$(ls "$OUTPUT_DIR"/*.vtt "$OUTPUT_DIR"/*.srt 2>/dev/null | head -1)
+  if [[ "$SUBTITLE_FILE" == *.vtt ]]; then
+    sed '/^[0-9]/d; /^$/d; /-->/d; /^WEBVTT/d; /^Kind:/d; /^Language:/d; /^NOTE/d' \
+      "$SUBTITLE_FILE" > "$OUTPUT_DIR/transcript.txt"
+  elif [[ "$SUBTITLE_FILE" == *.srt ]]; then
+    sed '/^[0-9]/d; /^$/d; /-->/d' "$SUBTITLE_FILE" > "$OUTPUT_DIR/transcript.txt"
+  fi
 fi
-
-# SRT to plain text
-if [[ "$SUBTITLE_FILE" == *.srt ]]; then
-  sed '/^[0-9]/d; /^$/d; /-->/d' "$SUBTITLE_FILE" > "$OUTPUT_DIR/transcript.txt"
-fi
-
-# Rename subtitle file to unified name
-mv "$SUBTITLE_FILE" "$OUTPUT_DIR/subtitle${SUBTITLE_FILE##*.}" 2>/dev/null || true
 ```
 
 ### Step 6: Generate Summary File
 
-1. **Read prompt template**: Read the summary generation prompt template from `summary-prompt.md`
-2. **Replace variables**: Replace placeholders with actual values:
-   - `{{TITLE}}` - Video title
-   - `{{PLATFORM}}` - Platform name (YouTube/Bilibili/Twitter etc.)
-   - `{{URL}}` - Original video link
-   - `{{DURATION}}` - Video duration
-   - `{{LANGUAGE}}` - Detected language
-   - `{{DOWNLOAD_TIME}}` - Download time
-   - `{{TRANSCRIPT}}` - Content of transcript.txt
-3. **Generate summary**: Generate summary content based on the filled prompt
-4. **Save file**: Write the summary to `$OUTPUT_DIR/summary.md`
-
-**Prompt template file**: `reference/summary-prompt.md` (located in this skill directory)
-
-Users can customize this file to adjust the summary format and content.
+1. Read prompt template from `reference/summary-prompt.md`
+2. Replace placeholders: `{{TITLE}}`, `{{PLATFORM}}`, `{{URL}}`, `{{DURATION}}`, `{{LANGUAGE}}`, `{{DOWNLOAD_TIME}}`, `{{TRANSCRIPT}}`
+3. Generate summary and save to `$OUTPUT_DIR/summary.md`
 
 ## Platform-Specific Handling
 
-### Twitter/X
-Twitter videos are usually short, summarize directly without chapters.
-
 ### Bilibili
-- Use `--sub-lang zh-Hans,zh-Hant,zh` to prioritize Chinese subtitles
-- Some Bilibili videos may need cookies: `--cookies-from-browser chrome`
-
-### TikTok
-- Videos are short, usually no subtitles
-- Recommend using Whisper transcription
+```bash
+# Prioritize Chinese subtitles
+yt-dlp --sub-lang zh-Hans,zh-Hant,zh ...
+# If login required
+yt-dlp --cookies-from-browser chrome "VIDEO_URL"
+```
 
 ### Platforms Requiring Login
 ```bash
-# Use browser cookies
 yt-dlp --cookies-from-browser chrome "VIDEO_URL"
-# or
+# or firefox
 yt-dlp --cookies-from-browser firefox "VIDEO_URL"
 ```
 
 ## Error Handling
 
 ### Cannot Get Subtitles
-1. Try auto-generated subtitles
-2. **Auto-install and use Whisper transcription** (no user prompt)
-3. Inform user that transcription is in progress
+Use the parallel transcription script (Step 4, option 3).
 
 ### Video Too Long (>1 hour)
 1. Ask user if they only need partial content
-2. Suggest processing in segments
-3. Extract key chapters only (if chapter info available)
+2. The parallel script handles long files automatically
 
 ### Unsupported Platform
 ```bash
-# Check if supported
 yt-dlp --list-extractors | grep -i "platform-name"
-```
-
-## Complete Example
-
-**User input**: "Summarize this video https://www.youtube.com/watch?v=xxxxx"
-
-**Execution flow**:
-```bash
-# 1. Get info and create directory
-TITLE=$(yt-dlp --print "%(title)s" "URL" | sed 's/[/:*?"<>|]/_/g' | cut -c1-80)
-OUTPUT_DIR=./downloads/"$TITLE"
-mkdir -p "$OUTPUT_DIR"
-
-# 2. Download video
-yt-dlp -f "bestvideo[height<=1080]+bestaudio/best" --merge-output-format mp4 \
-  -o "$OUTPUT_DIR/video.%(ext)s" "URL"
-
-# 3. Extract audio
-yt-dlp -x --audio-format mp3 -o "$OUTPUT_DIR/audio.%(ext)s" "URL"
-
-# 4. Download subtitles
-yt-dlp --write-auto-subs --sub-lang en --skip-download -o "$OUTPUT_DIR/subtitle" "URL"
-
-# 5. Generate plain text
-sed '/^[0-9]/d; /^$/d; /-->/d; /^WEBVTT/d' "$OUTPUT_DIR/subtitle.en.vtt" > "$OUTPUT_DIR/transcript.txt"
-
-# 6. Generate summary (written by Claude)
-```
-
-**Final output**:
-```
-./downloads/Video_Title/
-├── video.mp4
-├── audio.mp3
-├── subtitle.vtt
-├── transcript.txt
-└── summary.md
-```
-
-**Inform user of file location**:
-```
-Files saved to: ./downloads/Video_Title/
 ```
 
 ## Notes
 
-1. **Storage**: All files saved to `./downloads/` folder in current working directory
+1. **Storage**: Files saved to `./downloads/` in current working directory
 2. **Copyright**: For personal learning use only
-3. **Network**: Some platforms may require proxy in certain regions
-4. **Whisper**: First use requires model download (~244MB for small)
-5. **Disk Space**: Video files can be large, check available disk space
+3. **Network**: Some platforms may require proxy
+4. **First Run**: Whisper model download required (~244MB for small)
+5. **Parallel Processing**: Long audio (>60s) auto-splits at silence points
