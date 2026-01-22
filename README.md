@@ -14,19 +14,11 @@ A Claude Code skill that downloads videos from YouTube, Bilibili, Twitter/X, Tik
 
 ## Prerequisites
 
-Run the install script to check and install all dependencies:
-
-```bash
-bash scripts/install_deps.sh
-```
-
-This installs:
-
 | Tool | Purpose |
 |------|---------|
 | [yt-dlp](https://github.com/yt-dlp/yt-dlp) | Video downloading |
 | [ffmpeg](https://ffmpeg.org/) | Audio/video processing |
-| [faster-whisper](https://github.com/SYSTRAN/faster-whisper) | Fast speech-to-text (4-5x faster than openai-whisper) |
+| [faster-whisper](https://github.com/SYSTRAN/faster-whisper) | Fast speech-to-text |
 
 ## Installation
 
@@ -37,7 +29,7 @@ git clone https://github.com/liang121/video-summarizer.git
 # Copy to Claude Code skills directory
 cp -r video-summarizer ~/.claude/skills/
 
-# Install dependencies
+# Install dependencies (auto-installs all prerequisites)
 bash ~/.claude/skills/video-summarizer/scripts/install_deps.sh
 ```
 
