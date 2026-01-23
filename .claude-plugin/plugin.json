@@ -1,7 +1,7 @@
 {
   "name": "video-summarizer",
   "description": "Download videos from 1800+ platforms and generate AI summaries with complete resource packages",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": {
     "name": "liang121"
   },
