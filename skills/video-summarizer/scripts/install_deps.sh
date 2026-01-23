@@ -78,7 +78,7 @@ echo ""
 echo "[2/4] Checking yt-dlp..."
 if ! command -v yt-dlp &> /dev/null; then
     echo "  Installing yt-dlp..."
-    $PIP_CMD install yt-dlp
+    $PIP_CMD install --user yt-dlp
     echo "  yt-dlp installed"
 else
     echo "  yt-dlp: OK"
@@ -91,7 +91,7 @@ echo ""
 echo "[3/4] Checking faster-whisper..."
 if ! $PIP_CMD show faster-whisper &> /dev/null 2>&1; then
     echo "  Installing faster-whisper..."
-    $PIP_CMD install faster-whisper
+    $PIP_CMD install --user faster-whisper
     echo "  faster-whisper installed"
 else
     echo "  faster-whisper: OK"
