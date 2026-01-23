@@ -1,0 +1,10 @@
+{
+  "name": "video-summarizer",
+  "description": "Download videos from 1800+ platforms and generate AI summaries with complete resource packages",
+  "version": "1.0.0",
+  "author": {
+    "name": "liang121"
+  },
+  "homepage": "https://github.com/liang121/video-summarizer",
+  "license": "MIT"
+}

@@ -142,7 +142,7 @@ fi
 
 ### Step 6: Generate Summary File
 
-1. Read prompt template from `reference/summary-prompt.md`
+1. Read prompt template from `$SKILL_DIR/reference/summary-prompt.md`
 2. Replace placeholders: `{{TITLE}}`, `{{PLATFORM}}`, `{{URL}}`, `{{DURATION}}`, `{{LANGUAGE}}`, `{{DOWNLOAD_TIME}}`, `{{TRANSCRIPT}}`
 3. Generate summary and save to `$OUTPUT_DIR/summary.md`
 

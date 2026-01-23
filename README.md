@@ -17,8 +17,11 @@ A Claude Code skill that downloads videos from YouTube, Bilibili, Twitter/X, Tik
 ### Method 2: Manual Installation
 
 ```bash
-# Clone and install in one command
-git clone https://github.com/liang121/video-summarizer.git ~/.claude/skills/video-summarizer
+# Clone repository
+git clone https://github.com/liang121/video-summarizer.git ~/.claude/plugins/video-summarizer
+
+# Add plugin in Claude Code
+/plugin add ~/.claude/plugins/video-summarizer
 ```
 
 ### 2. Use the Skill
@@ -177,7 +180,7 @@ yt-dlp --cookies-from-browser chrome "URL"
 If you prefer to install dependencies yourself instead of letting Claude Code handle it:
 
 ```bash
-bash ~/.claude/skills/video-summarizer/scripts/install_deps.sh
+bash ~/.claude/plugins/video-summarizer/skills/video-summarizer/scripts/install_deps.sh
 ```
 
 This script installs:
