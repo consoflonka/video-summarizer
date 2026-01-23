@@ -1,6 +1,6 @@
 ---
 name: video-summarizer
-description: "Download videos from 1800+ platforms (YouTube, Bilibili, Twitter/X, TikTok, Vimeo, Instagram, etc.) and generate complete resource package with video, audio, subtitles, and AI summary. Actions: summarize, download, transcribe, extract video content. Platforms: youtube.com, bilibili.com, twitter.com, x.com, tiktok.com, vimeo.com, instagram.com, twitch.tv. Outputs: MP4 video, MP3 audio, VTT subtitles with timestamps, TXT transcript, MD AI summary. Auto-installs yt-dlp, ffmpeg, faster-whisper."
+description: "Download videos from 1800+ platforms (YouTube, Bilibili, Twitter/X, TikTok, Vimeo, Instagram, etc.) and generate complete resource package with video, audio, subtitles, and AI summary. Actions: summarize, download, transcribe, extract video content. Platforms: youtube.com, bilibili.com, twitter.com, x.com, tiktok.com, vimeo.com, instagram.com, twitch.tv. Outputs: MP4 video, MP3 audio, VTT subtitles with timestamps, TXT transcript, MD AI summary. Auto-installs uv, yt-dlp, ffmpeg. Python dependencies managed by uv."
 ---
 
 # Video Summarizer
@@ -59,7 +59,8 @@ Run the install script to check and install all dependencies:
 bash "$SKILL_DIR/scripts/install_deps.sh"
 ```
 
-This installs: ffmpeg, yt-dlp, faster-whisper, and checks Python version.
+This installs: uv (Python package manager), ffmpeg, yt-dlp, and checks Python version.
+faster-whisper will be automatically managed by uv.
 
 ### Step 2: Get Video Info and Create Output Directory
 
@@ -104,7 +105,7 @@ yt-dlp --write-auto-subs --sub-lang zh,en --skip-download \
 3. **Use faster-whisper transcription when no subtitles available**
 
 ```bash
-python "$SKILL_DIR/scripts/parallel_transcribe.py" \
+uv run "$SKILL_DIR/scripts/parallel_transcribe.py" \
   --input "$OUTPUT_DIR/audio.mp3" \
   --output-dir "$OUTPUT_DIR" \
   --model small \

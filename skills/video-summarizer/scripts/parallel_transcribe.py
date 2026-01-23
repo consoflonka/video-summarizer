@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.8"
+# dependencies = [
+#     "faster-whisper",
+# ]
+# ///
 """
 Parallel audio transcription using faster-whisper with silence-based segmentation.
 
 Usage:
-    python parallel_transcribe.py --input audio.mp3 --output-dir ./output --model small
+    uv run parallel_transcribe.py --input audio.mp3 --output-dir ./output --model small
 """
 
 import argparse
@@ -17,8 +23,8 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 
-def check_and_install_dependencies():
-    """Check and install required dependencies."""
+def check_dependencies():
+    """Check required system dependencies (ffmpeg)."""
     # Check ffmpeg
     if not shutil.which("ffmpeg"):
         print("Error: ffmpeg not found. Please install ffmpeg first.", file=sys.stderr)
@@ -29,41 +35,6 @@ def check_and_install_dependencies():
     if not shutil.which("ffprobe"):
         print("Error: ffprobe not found. Please install ffmpeg first.", file=sys.stderr)
         sys.exit(1)
-
-    # Check faster-whisper
-    try:
-        import faster_whisper
-    except ImportError:
-        print("faster-whisper not found, installing...")
-        # Try different pip commands
-        pip_cmd = None
-        for cmd in [sys.executable + " -m pip", "pip3", "pip"]:
-            try:
-                subprocess.run(
-                    cmd.split() + ["--version"],
-                    capture_output=True,
-                    check=True
-                )
-                pip_cmd = cmd
-                break
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                continue
-
-        if pip_cmd is None:
-            print("Error: pip not found. Please install faster-whisper manually:", file=sys.stderr)
-            print("  pip install faster-whisper", file=sys.stderr)
-            sys.exit(1)
-
-        # Install faster-whisper
-        try:
-            subprocess.run(
-                pip_cmd.split() + ["install", "faster-whisper"],
-                check=True
-            )
-            print("faster-whisper installed successfully")
-        except subprocess.CalledProcessError as e:
-            print(f"Error: Failed to install faster-whisper: {e}", file=sys.stderr)
-            sys.exit(1)
 
 
 def get_audio_duration(audio_path: str) -> float:
@@ -393,5 +364,5 @@ def main():
 
 
 if __name__ == "__main__":
-    check_and_install_dependencies()
+    check_dependencies()
     main()
