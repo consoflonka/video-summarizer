@@ -4,6 +4,42 @@ A Claude Code skill that downloads videos from YouTube, Bilibili, Twitter/X, Tik
 
 > **Note**: This is a skill for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI. Not affiliated with Anthropic.
 
+## Quick Start
+
+### Method 1: Claude Code Plugin Market (Recommended)
+
+```bash
+# Add marketplace and install
+/plugin marketplace add liang121/video-summarizer
+/plugin install video-summarizer@video-summarizer
+```
+
+### Method 2: Manual Installation
+
+```bash
+# Clone and install in one command
+git clone https://github.com/liang121/video-summarizer.git ~/.claude/skills/video-summarizer
+```
+
+### 2. Use the Skill
+
+**Quick Usage:**
+```bash
+/video-summarizer <video-url>
+```
+
+**Or use natural language:**
+```
+Summarize this video: <video-url>
+Download this video: https://www.bilibili.com/video/BVxxxxx
+```
+
+The skill will automatically:
+- **Auto-install dependencies** (yt-dlp, ffmpeg, faster-whisper) if needed
+- Download the video and extract subtitles
+- Transcribe with Whisper if no subtitles available
+- Generate an AI summary
+
 ## Features
 
 - **Multi-platform support** - YouTube, Bilibili, Twitter/X, Vimeo, TikTok, Instagram, Twitch, and [1800+ more sites](https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md)
@@ -11,33 +47,26 @@ A Claude Code skill that downloads videos from YouTube, Bilibili, Twitter/X, Tik
 - **Parallel Whisper transcription** - Uses faster-whisper with silence-based splitting for 4-5x faster speech-to-text
 - **AI-powered summaries** - Generates structured summaries with key points, quotes, and timestamps
 - **Complete resource package** - Outputs video (MP4), audio (MP3), subtitles (VTT), transcript (TXT), and summary (MD)
-
-## Prerequisites
-
-| Tool | Purpose |
-|------|---------|
-| [yt-dlp](https://github.com/yt-dlp/yt-dlp) | Video downloading |
-| [ffmpeg](https://ffmpeg.org/) | Audio/video processing |
-| [faster-whisper](https://github.com/SYSTRAN/faster-whisper) | Fast speech-to-text |
-
-## Installation
-
-```bash
-# Clone this repository
-git clone https://github.com/liang121/video-summarizer.git
-
-# Copy to Claude Code skills directory
-cp -r video-summarizer ~/.claude/skills/
-
-# Install dependencies (auto-installs all prerequisites)
-bash ~/.claude/skills/video-summarizer/scripts/install_deps.sh
-```
+- **Auto dependency management** - Claude Code installs everything for you
 
 ## Usage
 
-### Trigger Phrases
+### Slash Command (Direct)
 
-The skill activates when you say:
+```bash
+/video-summarizer <video-url>
+```
+
+**Examples:**
+```bash
+/video-summarizer https://www.youtube.com/watch?v=xxxxx
+/video-summarizer https://www.bilibili.com/video/BVxxxxx
+/video-summarizer https://twitter.com/user/status/xxxxx
+```
+
+### Natural Language (Auto-trigger)
+
+The skill also activates automatically when you say:
 
 - "Summarize this video: [URL]"
 - "Download this video: [URL]"
@@ -47,7 +76,7 @@ The skill activates when you say:
 ### Example
 
 ```
-Summarize this video: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+Summarize this video: <video-url>
 ```
 
 ### Output
@@ -143,6 +172,19 @@ Edit `reference/summary-prompt.md` to customize the output. Available variables:
 yt-dlp --cookies-from-browser chrome "URL"
 ```
 
+## Manual Installation (Optional)
+
+If you prefer to install dependencies yourself instead of letting Claude Code handle it:
+
+```bash
+bash ~/.claude/skills/video-summarizer/scripts/install_deps.sh
+```
+
+This script installs:
+- **yt-dlp** - Video downloading
+- **ffmpeg** - Audio/video processing
+- **faster-whisper** - Fast speech-to-text
+
 ## Troubleshooting
 
 | Issue | Solution |
@@ -150,7 +192,7 @@ yt-dlp --cookies-from-browser chrome "URL"
 | No subtitles | Whisper will auto-transcribe |
 | Download fails | Try `--cookies-from-browser chrome` |
 | Platform not supported | Check: `yt-dlp --list-extractors \| grep -i "name"` |
-| pip not found | Run `python3 -m ensurepip --upgrade` |
+| Missing dependencies | Ask Claude Code to "install video-summarizer dependencies" |
 
 ## License
 

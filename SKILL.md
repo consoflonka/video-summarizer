@@ -1,6 +1,6 @@
 ---
 name: video-summarizer
-description: Download videos from any platform and generate a complete resource package. Supports YouTube, Bilibili, Twitter/X, Vimeo, TikTok, Instagram and 1800+ sites. Outputs video, audio, subtitles (with timestamps), and AI summary. Triggers when user says "summarize this video", "download this video", or "transcribe this video".
+description: "Download videos from 1800+ platforms (YouTube, Bilibili, Twitter/X, TikTok, Vimeo, Instagram, etc.) and generate complete resource package with video, audio, subtitles, and AI summary. Actions: summarize, download, transcribe, extract video content. Platforms: youtube.com, bilibili.com, twitter.com, x.com, tiktok.com, vimeo.com, instagram.com, twitch.tv. Outputs: MP4 video, MP3 audio, VTT subtitles with timestamps, TXT transcript, MD AI summary. Auto-installs yt-dlp, ffmpeg, faster-whisper."
 ---
 
 # Video Summarizer

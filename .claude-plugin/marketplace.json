@@ -1,0 +1,40 @@
+{
+  "name": "video-summarizer",
+  "id": "video-summarizer",
+  "owner": {
+    "name": "liang121"
+  },
+  "metadata": {
+    "description": "Download videos from 1800+ platforms and generate AI summaries with complete resource packages",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "video-summarizer",
+      "source": "./",
+      "description": "Download videos from YouTube, Bilibili, Twitter/X, TikTok and 1800+ platforms. Outputs video (MP4), audio (MP3), subtitles (VTT with timestamps), transcript (TXT), and AI-powered summary (MD). Auto-installs dependencies (yt-dlp, ffmpeg, faster-whisper).",
+      "version": "1.0.0",
+      "author": {
+        "name": "liang121"
+      },
+      "keywords": [
+        "video",
+        "download",
+        "youtube",
+        "bilibili",
+        "twitter",
+        "tiktok",
+        "subtitle",
+        "transcription",
+        "whisper",
+        "ai-summary",
+        "yt-dlp",
+        "content-creation",
+        "learning",
+        "archive"
+      ],
+      "category": "productivity",
+      "strict": false
+    }
+  ]
+}
