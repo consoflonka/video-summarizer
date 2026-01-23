@@ -115,7 +115,11 @@ def split_audio(audio_path: str, split_points: list[float], output_dir: str) -> 
     chunks = []
     duration = get_audio_duration(audio_path)
 
-    all_points = [0.0] + split_points + [duration]
+    # Filter out split points that are too close to or exceed the audio duration
+    # This prevents ffmpeg errors when silence detection reports timestamps beyond actual length
+    valid_split_points = [sp for sp in split_points if sp < duration - 0.5]
+
+    all_points = [0.0] + valid_split_points + [duration]
 
     for i in range(len(all_points) - 1):
         start = all_points[i]
