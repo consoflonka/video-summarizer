@@ -92,13 +92,13 @@ yt-dlp -x --audio-format mp3 -o "$OUTPUT_DIR/audio.%(ext)s" "VIDEO_URL"
 
 1. **Try downloading manual subtitles (best quality)**
 ```bash
-yt-dlp --write-subs --sub-lang zh,en,zh-Hans,zh-Hant --skip-download \
+yt-dlp --write-subs --sub-lang de,en,de-DE,en-US --skip-download \
   -o "$OUTPUT_DIR/subtitle" "VIDEO_URL"
 ```
 
 2. **Try downloading auto-generated subtitles**
 ```bash
-yt-dlp --write-auto-subs --sub-lang zh,en --skip-download \
+yt-dlp --write-auto-subs --sub-lang de,en --skip-download \
   -o "$OUTPUT_DIR/subtitle" "VIDEO_URL"
 ```
 
